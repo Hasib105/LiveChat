@@ -10,6 +10,8 @@ pydantic = {extras = ["email"], version = "*"}
 python-dotenv = "*"
 pymongo = {extras = ["srv"], version = "*"}
 pydantic-settings = "*"
+bcrypt = "*"
+pyjwt = "*"
 
 [dev-packages]
 
