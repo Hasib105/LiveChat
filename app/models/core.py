@@ -1,10 +1,18 @@
 from bson import ObjectId
 from pydantic import BaseModel, EmailStr, Field
 from enum import Enum
+from typing import List
+from pydantic import BaseModel, EmailStr, Field
+from datetime import datetime
+
 
 class Role(str, Enum):
     ADMIN = "admin"
     EMPLOYEE = "employee"
+
+class Status(str, Enum):
+    OPEN = "open"
+    CLOSED = "closed"
 
 class PyObjectId(str):
     @classmethod
@@ -38,4 +46,23 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str  # Password for new users
 
-# FastAPI setup remains unchanged...
+
+class Guest(BaseModel):
+    email: EmailStr
+    full_name: str
+
+class Message(BaseModel):
+    id: PyObjectId = Field(default=None, alias="_id")
+    sender_id: PyObjectId
+    content: str = Field(..., min_length=1, max_length=500)  # Limit content length
+    timestamp: datetime = Field(default_factory=datetime.utcnow)  # Default to now
+
+class ChatRoom(BaseModel):
+    id: PyObjectId = Field(default=None, alias="_id")
+    title: str
+    participants: List[PyObjectId]
+    status: Status = Status.OPEN  # Default status is 'open'
+
+class ChatRoomWithMessages(BaseModel):
+    chat_room: ChatRoom
+    messages: List[Message] = []

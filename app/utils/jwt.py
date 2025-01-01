@@ -1,7 +1,7 @@
 import jwt
 from datetime import datetime, timedelta
 from app.core.config import settings
-from app.models.user import UserResponse
+from app.models.core import UserResponse
 from typing import Optional
 
 # Secret key for encoding and decoding JWT

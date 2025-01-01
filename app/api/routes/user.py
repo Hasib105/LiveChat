@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from app.db.database import db
-from app.models.user import UserCreate, UserResponse
+from app.models.core import UserCreate, UserResponse
 from app.utils.security import hash_password
 from app.utils.security import verify_password
 from app.utils.jwt import create_access_token
