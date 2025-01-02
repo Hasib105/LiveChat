@@ -6,6 +6,8 @@ from app.utils.security import verify_password
 from app.utils.jwt import create_access_token
 from pydantic import EmailStr
 from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel
+from typing import Dict  # Import Dict here
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 router = APIRouter()
@@ -31,20 +33,26 @@ async def create_user(user: UserCreate):
     return user_dict
 
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
 @router.post("/login")
-async def login(email: str, password: str):
-    user = db["users"].find_one({"email": email})
+async def login(request: LoginRequest) -> Dict[str, str]:
+    # Fetch user from the database using the provided email
+    user = db["users"].find_one({"email": request.email})
     
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Verify the password
-    if not verify_password(password, user["password"]):
+    # Verify the password without exposing it
+    if not verify_password(request.password, user["password"]):
         raise HTTPException(status_code=401, detail="Incorrect password")
     
-    # Create JWT token
+    # Create JWT token for authenticated user
     access_token = create_access_token(data={"sub": str(user["_id"])})
     
+    # Return only the access token and token type, without any password information
     return {"access_token": access_token, "token_type": "bearer"}
 
 

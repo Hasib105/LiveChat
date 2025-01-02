@@ -36,6 +36,10 @@ async def swagger_ui_redirect():
     """Redirect to Swagger UI."""
     return get_swagger_ui_html(openapi_url="/openapi.json", title=app.title)
 
+@app.get("/test")
+async def test_connection():
+    """Endpoint to test connection from frontend."""
+    return {"message": "Connection successful"}
 
 # Include user routes
 app.include_router(user.router, prefix="/api", tags=["Users"])
@@ -71,3 +75,6 @@ async def startup_event():
 async def shutdown_event():
     """Shutdown event handler."""
     print("Server shutting down... Cleaning up resources.")
+
+
+    # Test URL for frontend connection
