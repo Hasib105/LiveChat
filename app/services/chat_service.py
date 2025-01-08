@@ -9,6 +9,7 @@ class ChatService:
     def __init__(self):
         self.guest_requests = {}  # Guest requests stored by guest_id
         self.user_connections = []  # List of user WebSocket connections
+        self.active_rooms = {}  # Initialize active_rooms here
 
     async def handle_guest_connection(self, websocket: WebSocket):
         """Handle guest WebSocket connections."""
@@ -50,32 +51,31 @@ class ChatService:
 
     async def handle_chat_room(self, websocket: WebSocket, room_id: str):
         """Handle real-time messaging in a chat room."""
-        # Ensure room_id exists in active_rooms
         if room_id not in self.active_rooms:
             self.active_rooms[room_id] = []
 
-        # Add the websocket to the room
         self.active_rooms[room_id].append(websocket)
 
         try:
-            # Accept the WebSocket connection
             await websocket.accept()
 
             while True:
-                # Receive a message from the WebSocket
-                message = await websocket.receive_text()
-
-                # Relay the message to all participants in the room
-                for ws in self.active_rooms[room_id]:
-                    if ws != websocket:  # Don't send the message back to the sender
-                        try:
-                            await ws.send_text(message)
-                        except Exception as e:
-                            print(f"Error sending message to participant: {e}")
+                try:
+                    # Receive a message from the WebSocket
+                    message = await websocket.receive_json()
+                    # Relay the JSON message to all participants in the room
+                    for ws in self.active_rooms[room_id]:
+                        if ws != websocket:
+                            try:
+                                await ws.send_json(message)
+                            except Exception as e:
+                                print(f"Error sending message to participant: {e}")
+                except Exception as e:
+                    print(f"Error handling message: {e}")
         except WebSocketDisconnect:
-            # Handle WebSocket disconnection
             self.active_rooms[room_id].remove(websocket)
-            if not self.active_rooms[room_id]:  # If no participants remain, delete the room
+            if not self.active_rooms[room_id]:
                 del self.active_rooms[room_id]
                 print(f"Chat room {room_id} closed.")
+
 
